@@ -83,6 +83,7 @@ public class PlayerController : MonoBehaviour {
     private void HandleCamera() {
     }
 
+    #region Input Events
 
     public void OnMove(InputValue value) {
         var moveInput = value.Get<Vector2>();
@@ -135,6 +136,9 @@ public class PlayerController : MonoBehaviour {
         }
         
     }
+
+    #endregion
+   
 
     private void InitFSM(StateMachineEngine fsm) {
         standar = fsm.CreateEntryState("Standard", (() => {

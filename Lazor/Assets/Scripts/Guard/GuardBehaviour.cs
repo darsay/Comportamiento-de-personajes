@@ -55,6 +55,7 @@ public class GuardBehaviour : MonoBehaviour
         fsmUpdate();
     }
 
+    #region Patrolling
 
     void PatrolUpdate() {
         CastRays();
@@ -78,6 +79,16 @@ public class GuardBehaviour : MonoBehaviour
         _animator.SetBool("isWalking", true);
         checkPointReached = false;
     }
+
+    #endregion
+
+    #region Combat
+    void CombatUpdate() {
+        print("AAAAAAAAAAAAAAAAAAAAA");
+    }
+    
+
+    #endregion
 
     void InitFSM(StateMachineEngine fsm) {
         patrolling = fsm.CreateEntryState("Patrolling", (() => {
@@ -112,9 +123,7 @@ public class GuardBehaviour : MonoBehaviour
         }
     }
 
-    void CombatUpdate() {
-        print("AAAAAAAAAAAAAAAAAAAAA");
-    }
+    
     
     void OnDrawGizmosSelected()
     {
