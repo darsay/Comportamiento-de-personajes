@@ -90,7 +90,7 @@ public class SecurityCamBehaviour : MonoBehaviour
 
     void LookingUpdate() {
 
-        var previousRotation = Quaternion.LookRotation();
+        var previousRotation = Quaternion.LookRotation(playerGO.position);
         print(previousRotation.y);
         
         if (previousRotation.eulerAngles.y < targets.y || previousRotation.eulerAngles.y > targets.x) {
