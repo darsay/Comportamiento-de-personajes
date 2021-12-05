@@ -89,9 +89,13 @@ public class SecurityCamBehaviour : MonoBehaviour
     }
 
     void LookingUpdate() {
-        if (transform.rotation.eulerAngles.y > targets.y || transform.rotation.eulerAngles.y < targets.x) return;
+
+        var previousRotation = Quaternion.LookRotation();
+        print(previousRotation.y);
         
-        cameraObject.transform.DOLookAt(playerGO.position, 0.1f, AxisConstraint.Y);
+        if (previousRotation.eulerAngles.y < targets.y || previousRotation.eulerAngles.y > targets.x) {
+            cameraObject.transform.DOLookAt(playerGO.position, 0, AxisConstraint.Y);
+        }
     }
 
     void DestroyUpdate() {
@@ -148,11 +152,11 @@ public class SecurityCamBehaviour : MonoBehaviour
     {
         // Draws a 5 unit long red line in front of the object
         Gizmos.color = Color.green;
-        Vector3 direction = transform.TransformDirection(Vector3.forward) * 5;
+        Vector3 direction = lens.forward * 5;
         Gizmos.DrawRay(lens.position, direction);
-        direction = transform.TransformDirection(Vector3.forward + Vector3.left * 0.5f)*5;
+        direction = (lens.forward*0.5f+Vector3.left*0.5f)*5;
         Gizmos.DrawRay(lens.position, direction);
-        direction = transform.TransformDirection(Vector3.forward + Vector3.right * 0.5f)*5;
+        direction = (lens.forward*0.5f+Vector3.right*0.5f)*5;
         Gizmos.DrawRay(lens.position, direction);
     }
 }
