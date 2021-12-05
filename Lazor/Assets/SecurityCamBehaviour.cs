@@ -32,19 +32,15 @@ public class SecurityCamBehaviour : MonoBehaviour
     private bool rotationInProgress;
 
     private Vector2 targets;
-
-    [SerializeField]private GameObject cameraObject;
     
     // Player Detection
-    [SerializeField] private Transform lens;
-    private List<Ray> rays;
 
     [SerializeField] private Transform playerGO;
+    [SerializeField] private CameraRayCaster cameraRayCaster;
 
     private void Awake() {
-        initialRotation = cameraObject.transform.rotation.eulerAngles;
+        initialRotation = transform.rotation.eulerAngles;
         playerGO = FindObjectOfType<PlayerController>().transform;
-        rays = new List<Ray>();
         InitFsm();
         InitCam();
     }
@@ -55,7 +51,11 @@ public class SecurityCamBehaviour : MonoBehaviour
 
     void WatchUpdate() {
         CameraRotation();
-        LaunchRays();
+        cameraRayCaster.LaunchRays();
+        if (cameraRayCaster.LaunchRays()) {
+            playerFoundPerception.Fire();
+        }
+        
     }
 
     void CameraRotation() {
@@ -65,11 +65,11 @@ public class SecurityCamBehaviour : MonoBehaviour
             rotationInProgress = true;
             
             if(rotatingLeft) {
-                cameraObject.transform.DORotate(new Vector3(initialRotation.x, targets.x, initialRotation.z), rotationTime)
+                transform.DORotate(new Vector3(initialRotation.x, targets.x, initialRotation.z), rotationTime)
                     .OnComplete(() => StartCoroutine(WaitingTime(waitingTime)));
             }
             else {
-                cameraObject.transform.DORotate(new Vector3(initialRotation.x, targets.y, initialRotation.z), rotationTime)
+                transform.DORotate(new Vector3(initialRotation.x, targets.y, initialRotation.z), rotationTime)
                     .OnComplete(() => StartCoroutine(WaitingTime(waitingTime)));
             }
             
@@ -94,7 +94,7 @@ public class SecurityCamBehaviour : MonoBehaviour
         print(previousRotation.y);
         
         if (previousRotation.eulerAngles.y < targets.y || previousRotation.eulerAngles.y > targets.x) {
-            cameraObject.transform.DOLookAt(playerGO.position, 0, AxisConstraint.Y);
+            transform.DOLookAt(playerGO.position, 0, AxisConstraint.Y);
         }
     }
 
@@ -130,33 +130,5 @@ public class SecurityCamBehaviour : MonoBehaviour
         isRotating = true;
     }
 
-    void LaunchRays() {
-        rays.Clear();
-        rays.Add(new Ray(lens.position, lens.forward));
-        rays.Add(new Ray(lens.position, lens.forward+Vector3.left*0.5f));
-        rays.Add(new Ray(lens.position, lens.forward+Vector3.right*0.5f));
-        
-        RaycastHit hit;
-
-        foreach (var ray in rays) {
-            if (Physics.Raycast(ray, out hit, 5)) {
-                if (hit.collider.CompareTag("Player")) {
-                    playerFoundPerception.Fire();
-                }
-               
-            }
-        }
-    }
     
-    void OnDrawGizmosSelected()
-    {
-        // Draws a 5 unit long red line in front of the object
-        Gizmos.color = Color.green;
-        Vector3 direction = lens.forward * 5;
-        Gizmos.DrawRay(lens.position, direction);
-        direction = (lens.forward*0.5f+Vector3.left*0.5f)*5;
-        Gizmos.DrawRay(lens.position, direction);
-        direction = (lens.forward*0.5f+Vector3.right*0.5f)*5;
-        Gizmos.DrawRay(lens.position, direction);
-    }
 }
