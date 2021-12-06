@@ -344,11 +344,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &653977893 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -2954232503029829042, guid: a8d337af8ee76af4398ed095ff581db1, type: 3}
-  m_PrefabInstance: {fileID: 994209237}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &681866686
 GameObject:
   m_ObjectHideFlags: 0
@@ -471,12 +466,7 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!95 &994209240 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: a8d337af8ee76af4398ed095ff581db1, type: 3}
-  m_PrefabInstance: {fileID: 994209237}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &994209242
+--- !u!114 &994209241
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -485,17 +475,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 994209238}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6985d4f535f24f64aa31462795c0b108, type: 3}
+  m_Script: {fileID: 11500000, guid: 1c2362e33b173744ebf8b41bfc1b74b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _animator: {fileID: 994209240}
-  workerCheckPoints:
-  - {fileID: 1370811106}
-  - {fileID: 608696812}
-  - {fileID: 1317334737}
-  - {fileID: 681866687}
-  - {fileID: 1821713620}
-  head: {fileID: 653977893}
 --- !u!1 &1094921251
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,12 +1,17 @@
-﻿using System.Collections;
+﻿
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 public class WorkerFSMUS : MonoBehaviour {
 
     #region variables
 
+    delegate void FsmUpdate();
+    private FsmUpdate fsmUpdate;
     private StateMachineEngine NewFSM_FSM;
     private UtilitySystemEngine Trabajando_SubUS;
     
@@ -19,11 +24,14 @@ public class WorkerFSMUS : MonoBehaviour {
     private PushPerception MorirHuyendoPerception;
     private PushPerception MorirDandoLaAlarmaPerception;
     private PushPerception JugadorOCadaverVistoPerception;
+    private PushPerception EmpezarPerception;
+    private PushPerception PruebaPerception;
     private State Huyendo;
     private State DandoLaAlarma;
     private State Muerto;
     private State Escapando;
     private State Trabajando;
+    private State Inicio;
     private Factor NewCurveNode;
     private Factor NewCurveNode1;
     private Factor NewCurveNode2;
@@ -47,12 +55,15 @@ public class WorkerFSMUS : MonoBehaviour {
     // Start is called before the first frame update
     private void Start()
     {
+        fsmUpdate = TrabajandoAction;
+
         NewFSM_FSM = new StateMachineEngine(false);
         Trabajando_SubUS = new UtilitySystemEngine(true);
         
 
         CreateTrabajando_SubUS();
-        CreateStateMachine();
+        InitFSM(NewFSM_FSM);
+        //fsmUpdate = Inicio;
     }
     
     private void CreateTrabajando_SubUS()
@@ -83,7 +94,7 @@ public class WorkerFSMUS : MonoBehaviour {
         
     }
     
-    private void CreateStateMachine()
+    private void InitFSM(StateMachineEngine NewFSM_FSM)
     {
         // Perceptions
         // Modify or add new Perceptions, see the guide for more
@@ -95,13 +106,39 @@ public class WorkerFSMUS : MonoBehaviour {
         MorirHuyendoPerception = NewFSM_FSM.CreatePerception<PushPerception>();
         MorirDandoLaAlarmaPerception = NewFSM_FSM.CreatePerception<PushPerception>();
         JugadorOCadaverVistoPerception = NewFSM_FSM.CreatePerception<PushPerception>();
-        
+        EmpezarPerception = NewFSM_FSM.CreatePerception<PushPerception>();
+        PruebaPerception = NewFSM_FSM.CreatePerception<PushPerception>();
         // States
-        Huyendo = NewFSM_FSM.CreateState("Huyendo", HuyendoAction);
+        Huyendo = NewFSM_FSM.CreateState("Huyendo", (() => {
+            fsmUpdate = HuyendoAction;
+        }));
+
+        DandoLaAlarma = NewFSM_FSM.CreateState("DandoLaAlarma", (() => {
+            fsmUpdate = DandoLaAlarmaAction;
+        }));
+        
+        Muerto = NewFSM_FSM.CreateState("Muerto", (() => {
+            fsmUpdate = MuertoAction;
+        }));
+
+        Escapando = NewFSM_FSM.CreateState("Escapando", (() => {
+            fsmUpdate = HuyendoAction;
+        }));
+
+        /*Inicio = NewFSM_FSM.CreateEntryState("Inicio", (() => {
+            fsmUpdate = InicioAction;
+        }));*/
+
+        Trabajando = NewFSM_FSM.CreateEntryState("Trabajando", (() => {
+            fsmUpdate = TrabajandoAction;
+        }));
+        
+        /*Huyendo = NewFSM_FSM.CreateState("Huyendo", HuyendoAction);
         DandoLaAlarma = NewFSM_FSM.CreateState("DandoLaAlarma", DandoLaAlarmaAction);
         Muerto = NewFSM_FSM.CreateState("Muerto", MuertoAction);
         Escapando = NewFSM_FSM.CreateState("Escapando", EscapandoAction);
-        Trabajando = NewFSM_FSM.CreateSubStateMachine("Trabajando", Trabajando_SubUS);
+        Inicio = NewFSM_FSM.CreateEntryState("Inicio", InicioAction);
+        Trabajando = NewFSM_FSM.CreateSubStateMachine("Trabajando", Trabajando_SubUS);*/
         
         // Transitions
         NewFSM_FSM.CreateTransition("AlarmaDandoLaAlarma", DandoLaAlarma, AlarmaDandoLaAlarmaPerception, Huyendo);
@@ -109,68 +146,91 @@ public class WorkerFSMUS : MonoBehaviour {
         NewFSM_FSM.CreateTransition("NoAlarma", Escapando, NoAlarmaPerception, Trabajando);
         NewFSM_FSM.CreateTransition("MorirHuyendo", Huyendo, MorirHuyendoPerception, Muerto);
         NewFSM_FSM.CreateTransition("MorirDandoLaAlarma", DandoLaAlarma, MorirDandoLaAlarmaPerception, Muerto);
+        //NewFSM_FSM.CreateTransition("Empezar", Inicio, EmpezarPerception, Trabajando);
+        NewFSM_FSM.CreateTransition("Prueba", Trabajando, PruebaPerception, Escapando);
         
         // ExitPerceptions
         
         // ExitTransitions
         Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, AlarmaTrabajandoPerception, Huyendo);
-        Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, MorirTrabajandoPerception, Muerto);
-        Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, JugadorOCadaverVistoPerception, DandoLaAlarma);
+        //Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, MorirTrabajandoPerception, Muerto);
+        //Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, JugadorOCadaverVistoPerception, DandoLaAlarma);
         
     }
 
     // Update is called once per frame
     private void Update()
     {
-        NewFSM_FSM.Update();
-        Trabajando_SubUS.Update();
+        fsmUpdate();
+        
+        Debug.Log("Update");
+
+        /*
+        Debug.Log(sed);
+        Debug.Log(NewCurveNode1);
+        Debug.Log(ganasDeOrinar);
+        Debug.Log(NewCurveNode);
+        */
     }
 
     // Create your desired actions
     
     private void HuyendoAction()
     {
-        
+        Debug.Log("Huyendo");
     }
     
     private void DandoLaAlarmaAction()
     {
-        
+        Debug.Log("Dando la alarma");
     }
     
     private void MuertoAction()
     {
-        
+        Debug.Log("Muerto");
     }
     
     private void EscapandoAction()
     {
-        
+        Debug.Log("Escapando");
+    }
+
+    /*private void InicioAction()
+    {
+        Debug.Log("Inicio");
+        PruebaPerception.Fire();
+    }*/
+
+    private void TrabajandoAction()
+    {
+        Debug.Log("Trabajando");
+        Trabajando_SubUS.Update();
+        PruebaPerception.Fire();
     }
     
     private void IrAlBañoAction()
     {
-        
+        Debug.Log("Ir al baño");
     }
     
     private void IrALaCafeteriaAction()
     {
-        
+        Debug.Log("Ir a la cafeteria");
     }
     
     private void IrADescansarAction()
     {
-        
+        Debug.Log("Ir a descansar");
     }
     
     private void RealizarTarea1Action()
     {
-        
+        Debug.Log("Realizar Tarea 1");
     }
     
     private void RealizarTarea2Action()
     {
-        
+        Debug.Log("Realizar tarea 2");
     }
     
 }

@@ -87,7 +87,7 @@ public class Worker : MonoBehaviour {
     private void Update()
     {
         Worker_FSM.Update();
-        _navMeshAgent.destination = (workerCheckPoints[0].position);
+        //_navMeshAgent.destination = (workerCheckPoints[0].position);
         
     }
 
@@ -95,7 +95,7 @@ public class Worker : MonoBehaviour {
     
     private void WorkingAction()
     {
-        
+        Debug.Log("Working");
     }
     
     private void RunAwayAction()
