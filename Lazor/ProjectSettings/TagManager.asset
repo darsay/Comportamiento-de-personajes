@@ -8,6 +8,8 @@ TagManager:
   - Door
   - Key
   - Pizza
+  - Guard
+  - SecurityCam
   layers:
   - Default
   - TransparentFX
@@ -16,7 +18,7 @@ TagManager:
   - Water
   - UI
   - Post Processing
-  - 
+  - Guard
   - 
   - 
   - 

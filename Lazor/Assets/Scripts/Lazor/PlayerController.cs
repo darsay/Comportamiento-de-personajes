@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour {
@@ -54,17 +56,40 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private bool isCrouched;
     [SerializeField] private bool isMoving;
     [SerializeField] private bool isRunning;
+    [SerializeField] private bool isAiming;
+    
+    // Rig Builder
+    [SerializeField] private Rig aimRig;
+    [SerializeField] private RigBuilder rigBuilder;
     
     // Player stats
 
     [SerializeField] private float walkSpeed;
     [SerializeField] private float runSpeed;
     [SerializeField] private float stealthSpeed;
+    [SerializeField] private float aimSlowDown;
+    
+    // Aiming
+    [SerializeField] private GameObject gun;
+    [SerializeField] private CinemachineFreeLook cinemachineFreeLook;
+    [SerializeField] private GameObject aimReticle;
+
+    [SerializeField] private CapsuleCollider standCol;
+    [SerializeField] private CapsuleCollider crouchCol;
 
     private void Awake() {
         _rigidbody = GetComponent<Rigidbody>();
         _playerInput = GetComponent<PlayerInput>();
         cameraTransform = Camera.main.transform;
+
+        rigBuilder = GetComponent<RigBuilder>();
+        rigBuilder.enabled = false;
+        aimRig.weight = 0;
+
+        crouchCol.enabled = false;
+        
+        gun.SetActive(false);
+        aimReticle.SetActive(false);
         
         _fsmUpdate = StandardUpdate;
 
@@ -77,7 +102,9 @@ public class PlayerController : MonoBehaviour {
         playerStateMachine.Update();
         _fsmUpdate();
         HandleCamera();
-        print(playerStateMachine.actualState.Name);
+        if (isAiming) {
+            HandleRotation();
+        }
     }
 
     private void HandleCamera() {
@@ -93,6 +120,19 @@ public class PlayerController : MonoBehaviour {
             isMoving = true;
             _animator.SetBool("isWalking" ,true);
             HandleRotation();
+
+            if (isAiming) {
+                isAiming = false;
+                gun.SetActive(false);
+            
+                aimReticle.SetActive(false);
+            
+                cinemachineFreeLook.m_Lens.FieldOfView = 30;
+                cinemachineFreeLook.m_XAxis.Value = 0;
+            
+                DOTween.To(() => aimRig.weight, x => aimRig.weight = x, 0, 0.2f)
+                    .OnComplete((() => rigBuilder.enabled= false));
+            }
         }
         else {
             isMoving = false;
@@ -107,9 +147,13 @@ public class PlayerController : MonoBehaviour {
         }
         
         if (!isCrouched) {
+            crouchCol.enabled = true;
+            standCol.enabled = false;
             crouchPerception.Fire();
         }
         else { 
+            crouchCol.enabled = false;
+            standCol.enabled = true;
             standUpPerception.Fire();
         }
         
@@ -117,6 +161,8 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void OnRun(InputValue value) {
+        crouchCol.enabled = false;
+        standCol.enabled = true;
         if (!isMoving) {
             stopRunningPerception.Fire();
             return;
@@ -135,6 +181,48 @@ public class PlayerController : MonoBehaviour {
             _animator.SetBool("isRunning", false);
         }
         
+    }
+
+    public void OnAim(InputValue value) {
+        
+        if (value.isPressed && !isMoving) {
+            isAiming = true;
+            rigBuilder.enabled = true;
+            gun.SetActive(true);
+            aimReticle.SetActive(true);
+            cinemachineFreeLook.m_Lens.FieldOfView = 20;
+            cinemachineFreeLook.m_XAxis.Value = 20;
+            
+            DOTween.To(() => aimRig.weight, x => aimRig.weight = x, 1, 0.2f);
+        }
+        else {
+            isAiming = false;
+            gun.SetActive(false);
+            
+            aimReticle.SetActive(false);
+            
+            cinemachineFreeLook.m_Lens.FieldOfView = 30;
+            cinemachineFreeLook.m_XAxis.Value = 0;
+            
+            DOTween.To(() => aimRig.weight, x => aimRig.weight = x, 0, 0.2f)
+                .OnComplete((() => rigBuilder.enabled= false));
+        }
+
+    }
+
+    public void OnShoot() {
+        if (isAiming) {
+            Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5F, 0.5F, 0));
+            RaycastHit hit;
+            
+            if (Physics.Raycast(ray, out hit, 30)){
+                IDamageable<float> hitted = hit.collider.gameObject.GetComponent<IDamageable<float>>();
+                if (hitted != null) {
+                    hitted.TakeDamage(1);
+                }
+                   
+            }
+        }
     }
 
     #endregion
@@ -218,6 +306,12 @@ public class PlayerController : MonoBehaviour {
     }
 
     void  HandleRotation() {
-        transform.DOLookAt(transform.position + _rigidbody.velocity, 0.2f, AxisConstraint.Y);
+        if (isAiming) {
+            transform.DOLookAt(2 * transform.position - cameraTransform.position, 0.2f, AxisConstraint.Y);
+        }
+        else {
+            transform.DOLookAt(transform.position + _rigidbody.velocity, 0.2f, AxisConstraint.Y);
+        }
+        
     }
 }

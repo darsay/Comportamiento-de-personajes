@@ -2,30 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraRayCaster : MonoBehaviour
-{
-    private List<Ray> rays;
+public class CameraRayCaster : MonoBehaviour {
 
-    void Awake() {
-        rays = new List<Ray>();
-    }
-    
-    public bool LaunchRays() {
-        rays.Clear();
-        rays.Add(new Ray(transform.position, transform.forward));
+
+    public bool LaunchRays(Transform p, float distance) {
+        Ray ray = new Ray(transform.position, p.position - transform.position);
         
         RaycastHit hit;
-
-        foreach (var ray in rays) {
-            if (Physics.Raycast(ray, out hit, 10)) {print(hit.collider);
-                if (hit.collider.CompareTag("Player")) {
-                    print("muere lazor");
-                    return true;
-                }
-               
+            
+        if (Physics.Raycast(ray, out hit, distance)){
+            if (hit.collider.CompareTag("Player")) {
+                return true;
             }
+               
         }
-
+        
         return false;
     }
     
