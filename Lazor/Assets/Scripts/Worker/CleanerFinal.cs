@@ -38,8 +38,8 @@ public class CleanerFinal : MonoBehaviour {
     [SerializeField]private float ganasDeOrinar;
     [SerializeField]private float sed;
     [SerializeField]private float cansancio;
-    [SerializeField]private float ganasTarea1;
-    [SerializeField]private float ganasTarea2;
+    [SerializeField]private float ganasLimpieza;
+    
 
     private float tiempoGanasDeOrinar;
     private float tiempoSed;
@@ -58,12 +58,17 @@ public class CleanerFinal : MonoBehaviour {
     [SerializeField] private Transform baño;
     [SerializeField] private Transform cocina;
     [SerializeField] private Transform descanso;
-    [SerializeField] private Transform trabajo1;
-    [SerializeField] private Transform trabajo2;
+    [SerializeField] private List<Transform> limpieza;
+
+    [SerializeField] private int auxBasura;
+
+    [SerializeField] private Boolean cleanCheck = true;
 	[SerializeField] private Transform alarma1;
 	[SerializeField] private Transform alarma2;
 	[SerializeField] private Transform exit1;
 	[SerializeField] private Transform exit2;
+
+    
 
 	[SerializeField] private Animator _animator;
 
@@ -77,11 +82,15 @@ public class CleanerFinal : MonoBehaviour {
 
     private void Awake()
     {
+       
+
+
+
         tiempoGanasDeOrinar = Random.Range(0.2f, 0.5f);
         tiempoSed = Random.Range(0.2f, 0.5f);
         tiempoCansacio = Random.Range(0.5f, 1.0f);
-        tiempoTarea1 = Random.Range(1.0f, 2.0f);
-        tiempoTarea2 = Random.Range(1.0f, 2.0f);
+        tiempoLimpieza = Random.Range(1.0f, 2.0f);
+        
     }
 
     // Start is called before the first frame update
@@ -234,8 +243,8 @@ public class CleanerFinal : MonoBehaviour {
         {
             sed += tiempoSed * Time.deltaTime;
             ganasDeOrinar += tiempoGanasDeOrinar * Time.deltaTime;
-            ganasTarea1 += tiempoTarea1 * Time.deltaTime;
-            ganasTarea2 += tiempoTarea2 * Time.deltaTime;
+            ganasLimpieza += tiempoLimpieza * Time.deltaTime;
+            
             cansancio += tiempoCansacio * Time.deltaTime;
         }
 
@@ -244,10 +253,8 @@ public class CleanerFinal : MonoBehaviour {
             IrALaCafeteriaAction();
     	else if (ganasDeOrinar > 10 && checkpoint)
         	IrAlBañoAction();
-        else if (ganasTarea1 > 10 && checkpoint)
+        else if (ganasLimpieza > 10 && checkpoint)
             RealizarTarea1Action();
-        else if (ganasTarea2 > 10 && checkpoint)
-            RealizarTarea2Action();
     	else if (cansancio > 10 && checkpoint)
             IrADescansarAction();
 
@@ -302,37 +309,37 @@ public class CleanerFinal : MonoBehaviour {
     private void RealizarTarea1Action()
     {
 		_animator.SetBool("isWalking", true);
+
+
+
 		bucle = false;
         Debug.Log("Realizar Tarea 1");
-        _navMeshAgent.destination = trabajo1.position;
-        if (Vector3.Distance(transform.position, trabajo1.position) < 1 && checkpoint)
+        
+        
+        if(cleanCheck){
+            cleanCheck=false;
+            auxBasura=Random.Range(0,limpieza.Count-1);
+        }
+        
+        _navMeshAgent.destination =limpieza[auxBasura].position;
+
+        if (Vector3.Distance(transform.position, limpieza[auxBasura].position) < 1 && checkpoint)
         {
 			_animator.SetBool("isWalking", false);
 			checkpoint = false;
+            cleanCheck = false;
             StartCoroutine(WaitToNextMovement());
-            ganasTarea1 = 0;
+            ganasLimpieza = 0;
         }
     }
     
-    private void RealizarTarea2Action()
-    {
-		_animator.SetBool("isWalking", true);
-		bucle = false;
-        Debug.Log("Realizar tarea 2");
-        _navMeshAgent.destination = trabajo2.position;
-        if (Vector3.Distance(transform.position, trabajo2.position) < 1 && checkpoint)
-        {
-			_animator.SetBool("isWalking", false);
-			checkpoint = false;
-            StartCoroutine(WaitToNextMovement());
-            ganasTarea2 = 0;
-        }
-    }
+    
 
     IEnumerator WaitToNextMovement() {
         var waitTime = Random.Range(3, 9);
         yield return new WaitForSeconds(waitTime);
         bucle = true;
+        cleanCheck = true; 
 		checkpoint = true;
     }
 
