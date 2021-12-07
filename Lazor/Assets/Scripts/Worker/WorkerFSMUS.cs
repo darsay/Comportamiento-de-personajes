@@ -37,11 +37,11 @@ public class WorkerFSMUS : MonoBehaviour {
     private Factor NewCurveNode2;
     private Factor NewCurveNode3;
     private Factor NewCurveNode4;
-    private Factor ganasDeOrinar;
-    private Factor sed;
-    private Factor cansancio;
-    private Factor ganasTarea1;
-    private Factor ganasTarea2;
+    private float ganasDeOrinar;
+    private float sed;
+    private float cansancio;
+    private float ganasTarea1;
+    private float ganasTarea2;
     private UtilityAction IrAlBaño;
     private UtilityAction IrALaCafeteria;
     private UtilityAction IrADescansar;
@@ -69,24 +69,24 @@ public class WorkerFSMUS : MonoBehaviour {
     private void CreateTrabajando_SubUS()
     {
         // FACTORS
-        NewCurveNode = new ExpCurve(ganasDeOrinar, 1, 0, 0);
-        NewCurveNode1 = new LinearCurve(sed, 1, 0);
-        NewCurveNode2 = new ExpCurve(cansancio, 1, 0, 0);
-        NewCurveNode3 = new LinearCurve(ganasTarea1, 1, 0);
-        NewCurveNode4 = new LinearCurve(ganasTarea2, 1, 0);
-        ganasDeOrinar = new LeafVariable(() => /*Reference to desired variable*/0.0f, 100, 0);
-        sed = new LeafVariable(() => /*Reference to desired variable*/0.0f, 100, 0);
-        cansancio = new LeafVariable(() => /*Reference to desired variable*/0.0f, 100, 0);
-        ganasTarea1 = new LeafVariable(() => /*Reference to desired variable*/0.0f, 100, 0);
-        ganasTarea2 = new LeafVariable(() => /*Reference to desired variable*/0.0f, 100, 0);
+        
+        //NewCurveNode = new ExpCurve(ganasDeOrinar, 1, 0, 0);
+        //NewCurveNode1 = new LinearCurve(sed, 1, 0);
+        //NewCurveNode2 = new ExpCurve(cansancio, 1, 0, 0);
+        //NewCurveNode3 = new LinearCurve(ganasTarea1, 1, 0);
+        //NewCurveNode4 = new LinearCurve(ganasTarea2, 1, 0);
+        //ganasDeOrinar = new LeafVariable(() => /*Reference to desired variable*/0.0f, 100, 0);
+        //sed = new LeafVariable(() => /*Reference to desired variable*/0.0f, 100, 0);
+        //cansancio = new LeafVariable(() => /*Reference to desired variable*/0.0f, 100, 0);
+        //ganasTarea1 = new LeafVariable(() => /*Reference to desired variable*/0.0f, 100, 0);
+        //ganasTarea2 = new LeafVariable(() => /*Reference to desired variable*/0.0f, 100, 0);
         
         // ACTIONS
-        IrAlBaño = Trabajando_SubUS.CreateUtilityAction("IrAlBaño", IrAlBañoAction, NewCurveNode);
-        IrALaCafeteria = Trabajando_SubUS.CreateUtilityAction("IrALaCafeteria", IrALaCafeteriaAction, NewCurveNode1);
-        IrADescansar = Trabajando_SubUS.CreateUtilityAction("IrADescansar", IrADescansarAction, NewCurveNode2);
-        RealizarTarea1 = Trabajando_SubUS.CreateUtilityAction("RealizarTarea1", RealizarTarea1Action, NewCurveNode3);
-        RealizarTarea2 = Trabajando_SubUS.CreateUtilityAction("RealizarTarea2", RealizarTarea2Action, NewCurveNode4);
-        
+        //IrAlBaño = Trabajando_SubUS.CreateUtilityAction("IrAlBaño", IrAlBañoAction, NewCurveNode);
+        //IrALaCafeteria = Trabajando_SubUS.CreateUtilityAction("IrALaCafeteria", IrALaCafeteriaAction, NewCurveNode1);
+        //IrADescansar = Trabajando_SubUS.CreateUtilityAction("IrADescansar", IrADescansarAction, NewCurveNode2);
+        //RealizarTarea1 = Trabajando_SubUS.CreateUtilityAction("RealizarTarea1", RealizarTarea1Action, NewCurveNode3);
+        //RealizarTarea2 = Trabajando_SubUS.CreateUtilityAction("RealizarTarea2", RealizarTarea2Action, NewCurveNode4);
         
         // ExitPerceptions
         
@@ -164,12 +164,11 @@ public class WorkerFSMUS : MonoBehaviour {
         fsmUpdate();
         
         Debug.Log("Update");
-
-        /*
-        Debug.Log(sed);
-        Debug.Log(NewCurveNode1);
-        Debug.Log(ganasDeOrinar);
-        Debug.Log(NewCurveNode);
+        
+        /*Debug.Log(sed.getValue());
+        Debug.Log(NewCurveNode1.getValue());
+        Debug.Log(ganasDeOrinar.getValue());
+        Debug.Log(NewCurveNode.getValue());
         */
     }
 
@@ -205,7 +204,10 @@ public class WorkerFSMUS : MonoBehaviour {
     {
         Debug.Log("Trabajando");
         Trabajando_SubUS.Update();
-        PruebaPerception.Fire();
+        sed = 0;
+        //PruebaPerception.Fire();
+
+        
     }
     
     private void IrAlBañoAction()
