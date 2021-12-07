@@ -39,6 +39,8 @@ public class CleanerFinal : MonoBehaviour {
     [SerializeField]private float sed;
     [SerializeField]private float cansancio;
     [SerializeField]private float ganasLimpieza;
+
+    bool alarming;
     
 
     private float tiempoGanasDeOrinar;
@@ -121,6 +123,9 @@ public class CleanerFinal : MonoBehaviour {
         // States
         Huyendo = NewFSM_FSM.CreateState("Huyendo", (() => {
             fsmUpdate = HuyendoAction;
+            
+            print("Illo me voy");
+            alarming = false;
         }));
 
         DandoLaAlarma = NewFSM_FSM.CreateState("DandoLaAlarma", (() => {
@@ -198,29 +203,30 @@ public class CleanerFinal : MonoBehaviour {
     
     private void DandoLaAlarmaAction()
     {
+        if(alarming) return;
+        var alarmTarget = Vector3.Distance(transform.position, alarma1.position) < Vector3.Distance(transform.position, alarma2.position) ? alarma1.position : alarma2.position;
         Debug.Log("Dando la alarma");
 		bucle = false;
 		checkpoint = true;
 		_animator.SetBool("isWalking", true);
-		if (Vector3.Distance(transform.position, alarma1.position) < Vector3.Distance(transform.position, alarma2.position))
-		{
-			_navMeshAgent.destination = alarma1.position;
-			if (Vector3.Distance(transform.position, alarma1.position) < 1)
-				StartCoroutine(WaitToAlarm());
-		}
-		else
-		{
-			_navMeshAgent.destination = alarma2.position;
-			if (Vector3.Distance(transform.position, alarma2.position) < 1)
-				StartCoroutine(WaitToAlarm());
-		}
+
+        _navMeshAgent.destination = alarmTarget;
+        if (Vector3.Distance(transform.position, alarmTarget) < 1){
+            print("ALARMANDO");
+            StartCoroutine(WaitToAlarm());
+        }
+
 			
     }
 
 	IEnumerator WaitToAlarm() {
+        
+            
+        alarming = true;
 		_animator.SetBool("isWalking", false);
         yield return new WaitForSeconds(3);
-		AlarmaTrabajandoPerception.Fire();
+        print("Me voy");
+		AlarmaDandoLaAlarmaPerception.Fire();  
     }
     
     private void MuertoAction()
