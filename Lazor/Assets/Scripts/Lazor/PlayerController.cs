@@ -67,15 +67,18 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float walkSpeed;
     [SerializeField] private float runSpeed;
     [SerializeField] private float stealthSpeed;
-    [SerializeField] private float aimSlowDown;
+    [SerializeField] private float shootCooldown;
+    private float timeWithoutShooting;
     
     // Aiming
     [SerializeField] private GameObject gun;
     [SerializeField] private CinemachineFreeLook cinemachineFreeLook;
     [SerializeField] private GameObject aimReticle;
+    [SerializeField] private GameObject shootLight;
 
     [SerializeField] private CapsuleCollider standCol;
     [SerializeField] private CapsuleCollider crouchCol;
+    
 
     private void Awake() {
         _rigidbody = GetComponent<Rigidbody>();
@@ -85,6 +88,8 @@ public class PlayerController : MonoBehaviour {
         rigBuilder = GetComponent<RigBuilder>();
         rigBuilder.enabled = false;
         aimRig.weight = 0;
+        
+        Screen.lockCursor = true;
 
         crouchCol.enabled = false;
         
@@ -105,6 +110,8 @@ public class PlayerController : MonoBehaviour {
         if (isAiming) {
             HandleRotation();
         }
+
+        timeWithoutShooting += Time.deltaTime;
     }
 
     private void HandleCamera() {
@@ -199,6 +206,7 @@ public class PlayerController : MonoBehaviour {
             isAiming = false;
             gun.SetActive(false);
             
+            shootLight.SetActive(false);
             aimReticle.SetActive(false);
             
             cinemachineFreeLook.m_Lens.FieldOfView = 30;
@@ -211,7 +219,8 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void OnShoot() {
-        if (isAiming) {
+        if (isAiming && timeWithoutShooting > shootCooldown) {
+            shootLight.SetActive(true);
             Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5F, 0.5F, 0));
             RaycastHit hit;
             
@@ -222,6 +231,8 @@ public class PlayerController : MonoBehaviour {
                 }
                    
             }
+
+            timeWithoutShooting = 0;
         }
     }
 
