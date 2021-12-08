@@ -30,27 +30,17 @@ public class WorkerFinal : MonoBehaviour {
     private State Escapando;
     private State Trabajando;
     private State Inicio;
-    private Factor NewCurveNode;
-    private Factor NewCurveNode1;
-    private Factor NewCurveNode2;
-    private Factor NewCurveNode3;
-    private Factor NewCurveNode4;
     [SerializeField]private float ganasDeOrinar;
     [SerializeField]private float sed;
     [SerializeField]private float cansancio;
     [SerializeField]private float ganasTarea1;
     [SerializeField]private float ganasTarea2;
-
+    bool alarming;
     private float tiempoGanasDeOrinar;
     private float tiempoSed;
     private float tiempoCansacio;
     private float tiempoTarea1;
     private float tiempoTarea2;
-    private UtilityAction IrAlBaño;
-    private UtilityAction IrALaCafeteria;
-    private UtilityAction IrADescansar;
-    private UtilityAction RealizarTarea1;
-    private UtilityAction RealizarTarea2;
     [SerializeField] private Boolean bucle = true;
 
 	[SerializeField] private Boolean checkpoint = true;
@@ -112,6 +102,7 @@ public class WorkerFinal : MonoBehaviour {
         // States
         Huyendo = NewFSM_FSM.CreateState("Huyendo", (() => {
             fsmUpdate = HuyendoAction;
+            alarming = false;
         }));
 
         DandoLaAlarma = NewFSM_FSM.CreateState("DandoLaAlarma", (() => {
@@ -124,6 +115,7 @@ public class WorkerFinal : MonoBehaviour {
 
         Escapando = NewFSM_FSM.CreateState("Escapando", (() => {
             fsmUpdate = HuyendoAction;
+            alarming = false;
         }));
 
         Trabajando = NewFSM_FSM.CreateEntryState("Trabajando", (() => {
@@ -140,78 +132,53 @@ public class WorkerFinal : MonoBehaviour {
 		NewFSM_FSM.CreateTransition("AlarmaTrabajando", Trabajando, AlarmaTrabajandoPerception, Huyendo);
 		NewFSM_FSM.CreateTransition("JugadorOCadaverVisto", Trabajando, JugadorOCadaverVistoPerception, DandoLaAlarma);
 		NewFSM_FSM.CreateTransition("MorirTrabajando", Trabajando, MorirTrabajandoPerception, Muerto);
-		
-        
-        // ExitPerceptions
-        
-        // ExitTransitions
-        //Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, AlarmaTrabajandoPerception, Huyendo);
-        //Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, MorirTrabajandoPerception, Muerto);
-        //Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, JugadorOCadaverVistoPerception, DandoLaAlarma);
-        
     }
 
     // Update is called once per frame
     private void Update()
     {
         fsmUpdate();
-        
         Debug.Log("Update");
-        
-        /*Debug.Log(sed.getValue());
-        Debug.Log(NewCurveNode1.getValue());
-        Debug.Log(ganasDeOrinar.getValue());
-        Debug.Log(NewCurveNode.getValue());
-        */
     }
 
     // Create your desired actions
     
     private void HuyendoAction()
     {
+        if(alarming) return;
+        var exitTarget = Vector3.Distance(transform.position, exit1.position) < Vector3.Distance(transform.position, exit2.position) ? exit1.position : exit2.position;
         Debug.Log("Huyendo");
 		bucle = false;
 		checkpoint = true;
 		_animator.SetBool("isWalking", true);
-		if (Vector3.Distance(transform.position, exit1.position) < Vector3.Distance(transform.position, exit2.position))
-		{
-			_navMeshAgent.destination = exit1.position;
-			if (Vector3.Distance(transform.position, exit1.position) < 1)
-				EscaparPerception.Fire();
-		}
-		else
-		{
-			_navMeshAgent.destination = exit2.position;
-			if (Vector3.Distance(transform.position, exit2.position) < 1)
-				EscaparPerception.Fire();
-		}
+        _navMeshAgent.destination = exitTarget;
+        if (Vector3.Distance(transform.position, exitTarget) < 1){
+            EscaparPerception.Fire();
+        }
     }
     
     private void DandoLaAlarmaAction()
     {
+        if(alarming) return;
+        var alarmTarget = Vector3.Distance(transform.position, alarma1.position) < Vector3.Distance(transform.position, alarma2.position) ? alarma1.position : alarma2.position;
         Debug.Log("Dando la alarma");
 		bucle = false;
 		checkpoint = true;
 		_animator.SetBool("isWalking", true);
-		if (Vector3.Distance(transform.position, alarma1.position) < Vector3.Distance(transform.position, alarma2.position))
-		{
-			_navMeshAgent.destination = alarma1.position;
-			if (Vector3.Distance(transform.position, alarma1.position) < 1)
-				StartCoroutine(WaitToAlarm());
-		}
-		else
-		{
-			_navMeshAgent.destination = alarma2.position;
-			if (Vector3.Distance(transform.position, alarma2.position) < 1)
-				StartCoroutine(WaitToAlarm());
-		}
-			
+        _navMeshAgent.destination = alarmTarget;
+        if (Vector3.Distance(transform.position, alarmTarget) < 1){
+            print("ALARMANDO");
+            StartCoroutine(WaitToAlarm());
+        }
     }
 
 	IEnumerator WaitToAlarm() {
+    
+        alarming = true;
 		_animator.SetBool("isWalking", false);
         yield return new WaitForSeconds(3);
-		AlarmaTrabajandoPerception.Fire();
+        print("Me voy");
+		AlarmaDandoLaAlarmaPerception.Fire();  
     }
     
     private void MuertoAction()
@@ -227,7 +194,6 @@ public class WorkerFinal : MonoBehaviour {
     private void TrabajandoAction()
     {
         Debug.Log("Trabajando");
-        //Trabajando_SubUS.Update();
 
 		CastRays();
         if (bucle)
@@ -239,7 +205,6 @@ public class WorkerFinal : MonoBehaviour {
             cansancio += tiempoCansacio * Time.deltaTime;
         }
 
-
         if (sed > 10 && checkpoint)
             IrALaCafeteriaAction();
     	else if (ganasDeOrinar > 10 && checkpoint)
@@ -250,8 +215,6 @@ public class WorkerFinal : MonoBehaviour {
             RealizarTarea2Action();
     	else if (cansancio > 10 && checkpoint)
             IrADescansarAction();
-
-        
     }
     
     private void IrAlBañoAction()

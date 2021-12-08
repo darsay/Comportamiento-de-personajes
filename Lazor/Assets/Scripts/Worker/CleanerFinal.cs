@@ -29,12 +29,6 @@ public class CleanerFinal : MonoBehaviour {
     private State Muerto;
     private State Escapando;
     private State Trabajando;
-    private State Inicio;
-    private Factor NewCurveNode;
-    private Factor NewCurveNode1;
-    private Factor NewCurveNode2;
-    private Factor NewCurveNode3;
-    private Factor NewCurveNode4;
     [SerializeField]private float ganasDeOrinar;
     [SerializeField]private float sed;
     [SerializeField]private float cansancio;
@@ -84,15 +78,10 @@ public class CleanerFinal : MonoBehaviour {
 
     private void Awake()
     {
-       
-
-
-
         tiempoGanasDeOrinar = Random.Range(0.2f, 0.5f);
         tiempoSed = Random.Range(0.2f, 0.5f);
         tiempoCansacio = Random.Range(0.5f, 1.0f);
         tiempoLimpieza = Random.Range(1.0f, 2.0f);
-        
     }
 
     // Start is called before the first frame update
@@ -123,8 +112,6 @@ public class CleanerFinal : MonoBehaviour {
         // States
         Huyendo = NewFSM_FSM.CreateState("Huyendo", (() => {
             fsmUpdate = HuyendoAction;
-            
-            print("Illo me voy");
             alarming = false;
         }));
 
@@ -138,6 +125,7 @@ public class CleanerFinal : MonoBehaviour {
 
         Escapando = NewFSM_FSM.CreateState("Escapando", (() => {
             fsmUpdate = HuyendoAction;
+            alarming = false;
         }));
 
         Trabajando = NewFSM_FSM.CreateEntryState("Trabajando", (() => {
@@ -154,51 +142,29 @@ public class CleanerFinal : MonoBehaviour {
 		NewFSM_FSM.CreateTransition("AlarmaTrabajando", Trabajando, AlarmaTrabajandoPerception, Huyendo);
 		NewFSM_FSM.CreateTransition("JugadorOCadaverVisto", Trabajando, JugadorOCadaverVistoPerception, DandoLaAlarma);
 		NewFSM_FSM.CreateTransition("MorirTrabajando", Trabajando, MorirTrabajandoPerception, Muerto);
-		
-        
-        // ExitPerceptions
-        
-        // ExitTransitions
-        //Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, AlarmaTrabajandoPerception, Huyendo);
-        //Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, MorirTrabajandoPerception, Muerto);
-        //Trabajando_SubUS.CreateExitTransition("Trabajando_SubUSExit", Trabajando, JugadorOCadaverVistoPerception, DandoLaAlarma);
-        
     }
 
     // Update is called once per frame
     private void Update()
     {
-        fsmUpdate();
-        
+        fsmUpdate();  
         Debug.Log("Update");
-        
-        /*Debug.Log(sed.getValue());
-        Debug.Log(NewCurveNode1.getValue());
-        Debug.Log(ganasDeOrinar.getValue());
-        Debug.Log(NewCurveNode.getValue());
-        */
     }
 
     // Create your desired actions
     
     private void HuyendoAction()
     {
+        if(alarming) return;
+        var exitTarget = Vector3.Distance(transform.position, exit1.position) < Vector3.Distance(transform.position, exit2.position) ? exit1.position : exit2.position;
         Debug.Log("Huyendo");
 		bucle = false;
 		checkpoint = true;
 		_animator.SetBool("isWalking", true);
-		if (Vector3.Distance(transform.position, exit1.position) < Vector3.Distance(transform.position, exit2.position))
-		{
-			_navMeshAgent.destination = exit1.position;
-			if (Vector3.Distance(transform.position, exit1.position) < 1)
-				EscaparPerception.Fire();
-		}
-		else
-		{
-			_navMeshAgent.destination = exit2.position;
-			if (Vector3.Distance(transform.position, exit2.position) < 1)
-				EscaparPerception.Fire();
-		}
+        _navMeshAgent.destination = exitTarget;
+        if (Vector3.Distance(transform.position, exitTarget) < 1){
+            EscaparPerception.Fire();
+        }
     }
     
     private void DandoLaAlarmaAction()
@@ -209,19 +175,14 @@ public class CleanerFinal : MonoBehaviour {
 		bucle = false;
 		checkpoint = true;
 		_animator.SetBool("isWalking", true);
-
         _navMeshAgent.destination = alarmTarget;
         if (Vector3.Distance(transform.position, alarmTarget) < 1){
             print("ALARMANDO");
             StartCoroutine(WaitToAlarm());
         }
-
-			
     }
 
 	IEnumerator WaitToAlarm() {
-        
-            
         alarming = true;
 		_animator.SetBool("isWalking", false);
         yield return new WaitForSeconds(3);
@@ -242,8 +203,6 @@ public class CleanerFinal : MonoBehaviour {
     private void TrabajandoAction()
     {
         Debug.Log("Trabajando");
-        //Trabajando_SubUS.Update();
-
 		CastRays();
         if (bucle)
         {
@@ -253,8 +212,6 @@ public class CleanerFinal : MonoBehaviour {
             
             cansancio += tiempoCansacio * Time.deltaTime;
         }
-
-
         if (sed > 10 && checkpoint)
             IrALaCafeteriaAction();
     	else if (ganasDeOrinar > 10 && checkpoint)
@@ -263,8 +220,6 @@ public class CleanerFinal : MonoBehaviour {
             RealizarTarea1Action();
     	else if (cansancio > 10 && checkpoint)
             IrADescansarAction();
-
-        
     }
     
     private void IrAlBañoAction()
@@ -315,14 +270,10 @@ public class CleanerFinal : MonoBehaviour {
     private void RealizarTarea1Action()
     {
 		_animator.SetBool("isWalking", true);
-
-
-
 		bucle = false;
         Debug.Log("Realizar Tarea 1");
-        
-        
-        if(cleanCheck){
+        if(cleanCheck)
+        {
             cleanCheck=false;
             auxBasura=Random.Range(0,limpieza.Count-1);
         }
