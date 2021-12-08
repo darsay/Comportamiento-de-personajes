@@ -5,7 +5,7 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637745580897001568
+      ticks: 637745590105456584
     m_Hash: 3555805634
   m_LockFileStatus:
     m_FilePath: C:/Users/javie/Documents/GitHub/Comportamiento-de-personajes/Lazor/Packages/packages-lock.json
@@ -13,7 +13,7 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637745580897011564
+      ticks: 637745590105466588
     m_Hash: 2953763055
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
