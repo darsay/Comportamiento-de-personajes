@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Cinemachine;
 using UnityEngine;
 using DG.Tweening;
-using UnityEngine.Animations.Rigging;
+//using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour {
@@ -59,8 +59,8 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private bool isAiming;
     
     // Rig Builder
-    [SerializeField] private Rig aimRig;
-    [SerializeField] private RigBuilder rigBuilder;
+   // [SerializeField] private Rig aimRig;
+   // [SerializeField] private RigBuilder rigBuilder;
     
     // Player stats
 
@@ -82,9 +82,9 @@ public class PlayerController : MonoBehaviour {
         _playerInput = GetComponent<PlayerInput>();
         cameraTransform = Camera.main.transform;
 
-        rigBuilder = GetComponent<RigBuilder>();
-        rigBuilder.enabled = false;
-        aimRig.weight = 0;
+        //rigBuilder = GetComponent<RigBuilder>();
+        //rigBuilder.enabled = false;
+        //aimRig.weight = 0;
 
         crouchCol.enabled = false;
         
@@ -130,8 +130,8 @@ public class PlayerController : MonoBehaviour {
                 cinemachineFreeLook.m_Lens.FieldOfView = 30;
                 cinemachineFreeLook.m_XAxis.Value = 0;
             
-                DOTween.To(() => aimRig.weight, x => aimRig.weight = x, 0, 0.2f)
-                    .OnComplete((() => rigBuilder.enabled= false));
+               // DOTween.To(() => aimRig.weight, x => aimRig.weight = x, 0, 0.2f)
+               //     .OnComplete((() => rigBuilder.enabled= false));
             }
         }
         else {
@@ -187,13 +187,13 @@ public class PlayerController : MonoBehaviour {
         
         if (value.isPressed && !isMoving) {
             isAiming = true;
-            rigBuilder.enabled = true;
+            //rigBuilder.enabled = true;
             gun.SetActive(true);
             aimReticle.SetActive(true);
             cinemachineFreeLook.m_Lens.FieldOfView = 20;
             cinemachineFreeLook.m_XAxis.Value = 20;
             
-            DOTween.To(() => aimRig.weight, x => aimRig.weight = x, 1, 0.2f);
+            //DOTween.To(() => aimRig.weight, x => aimRig.weight = x, 1, 0.2f);
         }
         else {
             isAiming = false;
@@ -204,8 +204,8 @@ public class PlayerController : MonoBehaviour {
             cinemachineFreeLook.m_Lens.FieldOfView = 30;
             cinemachineFreeLook.m_XAxis.Value = 0;
             
-            DOTween.To(() => aimRig.weight, x => aimRig.weight = x, 0, 0.2f)
-                .OnComplete((() => rigBuilder.enabled= false));
+           //DOTween.To(() => aimRig.weight, x => aimRig.weight = x, 0, 0.2f)
+           //    .OnComplete((() => rigBuilder.enabled= false));
         }
 
     }
